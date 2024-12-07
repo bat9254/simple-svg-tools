@@ -380,7 +380,7 @@
                 if (canvasCount > 1) {
                     const removeBtn = document.createElement('button');
                     removeBtn.classList.add('remove-canvas-btn');
-                    removeBtn.innerHTML = '&times;';
+                    removeBtn.innerHTML = '×';
                     removeBtn.title = 'Remove Canvas';
                     removeBtn.setAttribute('aria-label', 'Remove Canvas');
                     removeBtn.addEventListener('click', () => {
@@ -510,11 +510,6 @@
                     // Reset the file input value to allow uploading the same file again if needed
                     event.target.value = '';
                 });
-
-                // Load SVG from URL hash only for the first canvas
-                if (canvasCount === 1) {
-                    loadSVGFromHash(textarea, previewDiv);
-                }
 
                 // Disable Add Canvas button if max reached
                 if (canvasCount >= MAX_CANVASES) {
@@ -655,44 +650,33 @@
                 }, 3000);
             }
 
-            // Load SVG from URL hash on initial load for the first canvas
-            function loadSVGFromHash(textarea, previewDiv) {
+            // Load SVG from URL hash on initial load and hash change
+            function loadSVGFromHash() {
                 const hash = window.location.hash.substring(1);
                 if (hash) {
                     try {
                         const decoded = decodeURIComponent(hash);
-                        textarea.value = decoded;
-                        updatePreview(decoded, previewDiv);
+                        // Apply to all textareas
+                        const textareas = document.querySelectorAll('.editor-container textarea');
+                        textareas.forEach((textarea, index) => {
+                            textarea.value = decoded;
+                            const previewDiv = document.getElementById(`svg-preview-${index + 1}`);
+                            updatePreview(decoded, previewDiv);
+                        });
                         showToast('SVG Loaded from URL');
                     } catch (e) {
                         console.error('Invalid SVG code in URL hash.');
-                        textarea.value = defaultSVG;
-                        updatePreview(defaultSVG, previewDiv);
                         showToast('Failed to Load SVG from URL', true);
                     }
                 }
             }
 
-            // Listen for hash changes (for dynamic loading)
-            window.addEventListener('hashchange', () => {
-                const firstCanvas = document.querySelector('.canvas-container');
-                if (firstCanvas) {
-                    const textarea = firstCanvas.querySelector('textarea');
-                    const previewDiv = firstCanvas.querySelector(`#${firstCanvas.id} .preview-container div`);
-                    loadSVGFromHash(textarea, previewDiv);
-                }
-            });
+            // Listen for hash changes
+            window.addEventListener('hashchange', loadSVGFromHash);
 
-            // Initial load listener
-            window.addEventListener('load', () => {
-                const firstCanvas = document.querySelector('.canvas-container');
-                if (firstCanvas) {
-                    const textarea = firstCanvas.querySelector('textarea');
-                    const previewDiv = firstCanvas.querySelector(`#${firstCanvas.id} .preview-container div`);
-                    loadSVGFromHash(textarea, previewDiv);
-                }
-            });
+            // Initial load
+            window.addEventListener('load', loadSVGFromHash);
         })();
     </script>
 </body>
-  </html>
+</html>
