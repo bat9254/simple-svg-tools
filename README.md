@@ -1,5 +1,4 @@
 # simple-svg-tools
-https://bat9254.github.io/simple-svg-tools/
 Simple SVG Tools: Create, Edit, View, Download and Share SVGs with Ease
 
 **SVG Test Site** is an intuitive and responsive web application designed to empower users to effortlessly create, edit, preview, download, and share Scalable Vector Graphics (SVG) code. Whether you're a seasoned designer or just starting with SVGs, this tool provides a streamlined environment for experimentation and collaboration.
