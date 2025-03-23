@@ -239,6 +239,82 @@
             display: block;
         }
 
+        /* PNG Settings Panel */
+        .png-settings {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .png-settings.show {
+            display: block;
+        }
+
+        .png-settings-title {
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .png-settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .png-setting-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .png-setting-item label {
+            font-size: 0.85em;
+            margin-bottom: 4px;
+        }
+
+        .png-setting-item input {
+            padding: 6px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .png-settings-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 10px;
+            gap: 8px;
+        }
+
+        .png-settings-actions button {
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s ease;
+        }
+
+        .png-cancel {
+            background-color: #f0f0f0;
+            color: var(--text-color);
+        }
+
+        .png-download {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .png-download:hover {
+            background-color: #45c9ad;
+        }
+
+        .png-cancel:hover {
+            background-color: #e5e5e5;
+        }
+
         /* Action Buttons */
         .action-buttons {
             margin-top: 10px;
@@ -292,6 +368,15 @@
 
         .action-buttons button.validate-btn:hover {
             background-color: #45c9ad;
+        }
+
+        /* PNG Button */
+        .action-buttons button.png-btn {
+            background-color: #9c27b0;
+        }
+
+        .action-buttons button.png-btn:hover {
+            background-color: #7b1fa2;
         }
 
         /* Tooltips */
@@ -376,6 +461,14 @@
             transform: translateY(-2px);
         }
 
+        /* Hidden Canvas for PNG export */
+        #png-export-canvas {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+            visibility: hidden;
+        }
+
         /* Animations */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -435,6 +528,21 @@
             word-break: break-word;
         }
 
+        /* Loading Indicator */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .canvases-wrapper {
@@ -455,6 +563,10 @@
 
             .action-buttons {
                 justify-content: center;
+            }
+
+            .png-settings-grid {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -495,6 +607,9 @@
         <span class="toast-message">Action Successful</span>
     </div>
 
+    <!-- Hidden Canvas for PNG export -->
+    <canvas id="png-export-canvas"></canvas>
+
     <script>
         (function() {
             // Constants
@@ -521,7 +636,8 @@
                 fullscreen: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>',
                 upload: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>',
                 validate: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>',
-                close: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>'
+                close: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>',
+                png: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>'
             };
 
             // Initialize with one canvas
@@ -585,6 +701,36 @@
                 errorMsg.setAttribute('id', `error-${canvasId}`);
                 editorContainer.appendChild(errorMsg);
 
+                // PNG Settings Panel
+                const pngSettings = document.createElement('div');
+                pngSettings.classList.add('png-settings');
+                pngSettings.innerHTML = `
+                    <div class="png-settings-title">PNG Export Settings</div>
+                    <div class="png-settings-grid">
+                        <div class="png-setting-item">
+                            <label for="png-width-${canvasId}">Width (px)</label>
+                            <input type="number" id="png-width-${canvasId}" value="800" min="50" max="4000">
+                        </div>
+                        <div class="png-setting-item">
+                            <label for="png-height-${canvasId}">Height (px)</label>
+                            <input type="number" id="png-height-${canvasId}" value="600" min="50" max="4000">
+                        </div>
+                        <div class="png-setting-item">
+                            <label for="png-scale-${canvasId}">Scale</label>
+                            <input type="number" id="png-scale-${canvasId}" value="2" min="0.5" max="5" step="0.5">
+                        </div>
+                        <div class="png-setting-item">
+                            <label for="png-bg-${canvasId}">Background</label>
+                            <input type="color" id="png-bg-${canvasId}" value="#ffffff">
+                        </div>
+                    </div>
+                    <div class="png-settings-actions">
+                        <button class="png-cancel">Cancel</button>
+                        <button class="png-download">Download PNG</button>
+                    </div>
+                `;
+                editorContainer.appendChild(pngSettings);
+
                 // Action Buttons
                 const actionButtons = document.createElement('div');
                 actionButtons.classList.add('action-buttons');
@@ -598,13 +744,22 @@
                 validateBtn.innerHTML = svgIcons.validate + '<span>Validate</span>';
                 actionButtons.appendChild(validateBtn);
 
-                // Download Button
+                // Download SVG Button
                 const downloadBtn = document.createElement('button');
                 downloadBtn.title = 'Download SVG';
                 downloadBtn.setAttribute('aria-label', 'Download SVG');
                 downloadBtn.setAttribute('data-tooltip', 'Download SVG');
-                downloadBtn.innerHTML = svgIcons.download + '<span>Download</span>';
+                downloadBtn.innerHTML = svgIcons.download + '<span>SVG</span>';
                 actionButtons.appendChild(downloadBtn);
+
+                // Download PNG Button (new)
+                const pngBtn = document.createElement('button');
+                pngBtn.classList.add('png-btn');
+                pngBtn.title = 'Download PNG';
+                pngBtn.setAttribute('aria-label', 'Download PNG');
+                pngBtn.setAttribute('data-tooltip', 'Download PNG');
+                pngBtn.innerHTML = svgIcons.png + '<span>PNG</span>';
+                actionButtons.appendChild(pngBtn);
 
                 // Share Button
                 const shareBtn = document.createElement('button');
@@ -668,6 +823,53 @@
 
                 downloadBtn.addEventListener('click', () => {
                     downloadSVG(textarea.value);
+                });
+
+                // PNG Button Click Event
+                pngBtn.addEventListener('click', () => {
+                    // First validate SVG
+                    if (validateSVG(textarea.value, errorMsg, previewContainer, false)) {
+                        // Show PNG settings panel
+                        pngSettings.classList.add('show');
+                    } else {
+                        showToast('Please fix SVG errors before exporting to PNG', 'error');
+                    }
+                });
+
+                // PNG Settings - Cancel Button
+                const pngCancelBtn = pngSettings.querySelector('.png-cancel');
+                pngCancelBtn.addEventListener('click', () => {
+                    pngSettings.classList.remove('show');
+                });
+
+                // PNG Settings - Download Button
+                const pngDownloadBtn = pngSettings.querySelector('.png-download');
+                pngDownloadBtn.addEventListener('click', async () => {
+                    const width = Number(document.getElementById(`png-width-${canvasId}`).value);
+                    const height = Number(document.getElementById(`png-height-${canvasId}`).value);
+                    const scale = Number(document.getElementById(`png-scale-${canvasId}`).value);
+                    const bgColor = document.getElementById(`png-bg-${canvasId}`).value;
+
+                    // Validate values
+                    if (width < 50 || width > 4000 || height < 50 || height > 4000 || scale < 0.5 || scale > 5) {
+                        showToast('Please enter valid PNG export settings', 'error');
+                        return;
+                    }
+
+                    // Update button state
+                    pngDownloadBtn.innerHTML = '<div class="loading-spinner"></div>';
+                    pngDownloadBtn.disabled = true;
+
+                    try {
+                        await downloadPNG(textarea.value, width, height, scale, bgColor);
+                        pngSettings.classList.remove('show');
+                        showToast('PNG Downloaded Successfully', 'success');
+                    } catch (error) {
+                        showToast('PNG export failed: ' + error.message, 'error');
+                    } finally {
+                        pngDownloadBtn.innerHTML = 'Download PNG';
+                        pngDownloadBtn.disabled = false;
+                    }
                 });
 
                 shareBtn.addEventListener('click', () => {
@@ -782,10 +984,10 @@
                 }
             }
 
-            function validateSVG(svgContent, errorMsg, previewContainer) {
+            function validateSVG(svgContent, errorMsg, previewContainer, showMessage = true) {
                 if (!svgContent.trim()) {
-                    showToast('SVG code cannot be empty.', 'error');
-                    return;
+                    if (showMessage) showToast('SVG code cannot be empty.', 'error');
+                    return false;
                 }
 
                 try {
@@ -808,13 +1010,15 @@
                     errorMsg.classList.remove('show');
                     previewContainer.classList.remove('error');
 
-                    showToast('SVG is valid!', 'success');
+                    if (showMessage) showToast('SVG is valid!', 'success');
+                    return true;
                 } catch (e) {
                     console.error('Validation Error:', e);
                     previewContainer.classList.add('error');
                     errorMsg.textContent = `Error: ${e.message}`;
                     errorMsg.classList.add('show');
-                    showToast('SVG validation failed', 'error');
+                    if (showMessage) showToast('SVG validation failed', 'error');
+                    return false;
                 }
             }
 
@@ -892,6 +1096,100 @@
                 } catch (e) {
                     showToast(`Download failed: ${e.message}`, 'error');
                 }
+            }
+
+            // New function to convert SVG to PNG and download
+            async function downloadPNG(svgContent, width, height, scale, bgColor) {
+                if (!svgContent.trim()) {
+                    throw new Error('No SVG content to convert');
+                }
+
+                return new Promise((resolve, reject) => {
+                    try {
+                        // Parse SVG to make sure it's valid
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(svgContent, "image/svg+xml");
+
+                        const parserError = doc.querySelector('parsererror');
+                        if (parserError) {
+                            throw new Error('Invalid SVG format');
+                        }
+
+                        const svg = doc.querySelector('svg');
+                        if (!svg) {
+                            throw new Error('No SVG element found');
+                        }
+
+                        // Create a Blob URL for the SVG
+                        const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+                        const url = URL.createObjectURL(blob);
+
+                        // Create an Image object to load the SVG
+                        const img = new Image();
+                        img.src = url;
+
+                        img.onload = function() {
+                            // Get the canvas for export
+                            const canvas = document.getElementById('png-export-canvas');
+
+                            // Set canvas dimensions based on settings
+                            canvas.width = width * scale;
+                            canvas.height = height * scale;
+
+                            // Get canvas context
+                            const ctx = canvas.getContext('2d');
+
+                            // Fill with background color
+                            ctx.fillStyle = bgColor;
+                            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                            // Calculate aspect ratios to maintain proportions
+                            const imgAspect = img.width / img.height;
+                            const canvasAspect = width / height;
+
+                            let drawWidth, drawHeight, offsetX, offsetY;
+
+                            if (imgAspect > canvasAspect) {
+                                // Image is wider than canvas proportionally
+                                drawWidth = width * scale;
+                                drawHeight = (width / imgAspect) * scale;
+                                offsetX = 0;
+                                offsetY = (height * scale - drawHeight) / 2;
+                            } else {
+                                // Image is taller than canvas proportionally
+                                drawHeight = height * scale;
+                                drawWidth = (height * imgAspect) * scale;
+                                offsetX = (width * scale - drawWidth) / 2;
+                                offsetY = 0;
+                            }
+
+                            // Draw the image onto the canvas
+                            ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+
+                            // Convert canvas to PNG data URL
+                            const pngDataUrl = canvas.toDataURL('image/png');
+
+                            // Create download link
+                            const a = document.createElement('a');
+                            a.href = pngDataUrl;
+                            a.download = `png-export-${new Date().toISOString().slice(0, 10)}.png`;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+
+                            // Clean up
+                            URL.revokeObjectURL(url);
+                            resolve();
+                        };
+
+                        img.onerror = function() {
+                            URL.revokeObjectURL(url);
+                            reject(new Error('Failed to load SVG'));
+                        };
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
             }
 
             function shareLink(svgContent) {
