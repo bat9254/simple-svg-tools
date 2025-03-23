@@ -28,6 +28,8 @@
             --tooltip-bg: rgba(0, 0, 0, 0.75);
             --tooltip-color: #FFFFFF;
             --toast-bg: rgba(0, 0, 0, 0.8);
+            --toast-success: rgba(80, 227, 194, 0.9);
+            --toast-error: rgba(255, 107, 107, 0.9);
             --toast-color: #FFFFFF;
             --max-width: 1200px;
         }
@@ -69,22 +71,32 @@
             width: 60px;
             height: 60px;
             font-size: 2.5em;
+            line-height: 0.8;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease;
             z-index: 1000;
         }
 
         #add-canvas-btn:hover {
             background-color: var(--button-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        }
+
+        #add-canvas-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         #add-canvas-btn:disabled {
             background-color: #ccc;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         /* Canvas Container */
@@ -107,28 +119,44 @@
             display: flex;
             flex-direction: column;
             position: relative;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .canvas-container:hover {
             transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* Canvas Heading */
+        .canvas-heading {
+            margin-bottom: 15px;
+            font-family: 'Montserrat', sans-serif;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         /* Remove Canvas Button */
         .remove-canvas-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
             background: transparent;
             border: none;
             font-size: 1.5em;
+            width: 30px;
+            height: 30px;
+            line-height: 0.7;
             color: var(--remove-btn-color);
             cursor: pointer;
-            transition: color 0.3s ease;
+            transition: color 0.3s ease, transform 0.2s ease;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .remove-canvas-btn:hover {
             color: #FF3B3B;
+            transform: rotate(90deg);
         }
 
         /* Editor and Preview Layout */
@@ -153,22 +181,25 @@
 
         .editor-container textarea {
             flex: 1;
+            min-height: 200px;
             width: 100%;
             resize: vertical;
-            padding: 10px 15px;
+            padding: 12px 15px;
             font-family: 'Courier New', Courier, monospace;
             font-size: 1em;
+            line-height: 1.4;
             border: 1px solid var(--border-color);
             border-radius: 4px;
             background-color: #FAFAFA;
             color: var(--text-color);
             overflow: auto;
-            transition: border-color 0.3s ease;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .editor-container textarea:focus {
             border-color: var(--primary-color);
             outline: none;
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
         }
 
         .preview-container {
@@ -176,11 +207,28 @@
             align-items: center;
             border: 1px solid var(--border-color);
             border-radius: 4px;
-            padding: 10px;
+            padding: 15px;
             background-color: #FFFFFF;
             min-height: 200px;
             transition: border-color 0.3s ease;
             overflow: auto;
+        }
+
+        .preview-container.error {
+            border-color: var(--remove-btn-color);
+            background-color: rgba(255, 107, 107, 0.05);
+        }
+
+        /* Error Message */
+        .error-message {
+            color: var(--remove-btn-color);
+            font-size: 0.9em;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
         }
 
         /* Ensure SVGs are Responsive */
@@ -196,6 +244,7 @@
             margin-top: 10px;
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
         }
 
         .action-buttons button {
@@ -209,18 +258,40 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
             position: relative;
+            gap: 5px;
+        }
+
+        .action-buttons button svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        .action-buttons button span {
+            font-size: 0.9em;
         }
 
         .action-buttons button:hover {
             background-color: var(--button-hover);
             transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .action-buttons button:active {
             background-color: var(--button-active);
             transform: translateY(0);
+            box-shadow: none;
+        }
+
+        /* Validate Button */
+        .action-buttons button.validate-btn {
+            background-color: var(--secondary-color);
+        }
+
+        .action-buttons button.validate-btn:hover {
+            background-color: #45c9ad;
         }
 
         /* Tooltips */
@@ -237,13 +308,16 @@
             white-space: nowrap;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.3s ease, transform 0.3s ease;
             font-size: 0.8em;
             z-index: 10;
+            transform-origin: bottom center;
+            transform: translateX(-50%) scale(0.9);
         }
 
         .action-buttons button:hover::after {
             opacity: 1;
+            transform: translateX(-50%) scale(1);
         }
 
         /* Fullscreen Overlay */
@@ -263,6 +337,10 @@
             animation: fadeIn 0.3s ease;
         }
 
+        .fullscreen-overlay.fadeOut {
+            animation: fadeOut 0.3s ease forwards;
+        }
+
         .fullscreen-overlay #fs-preview {
             width: 100%;
             height: 80%;
@@ -272,6 +350,10 @@
             overflow: auto;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
 
         .fullscreen-overlay button.close-btn {
@@ -284,6 +366,9 @@
             cursor: pointer;
             font-size: 1em;
             transition: background-color 0.3s ease, transform 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .fullscreen-overlay button.close-btn:hover {
@@ -293,8 +378,13 @@
 
         /* Animations */
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(10px); }
         }
 
         /* Toast Notifications */
@@ -309,24 +399,80 @@
             border-radius: 4px;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.5s ease;
+            transition: opacity 0.3s ease, transform 0.3s ease;
             z-index: 1002;
             font-size: 0.9em;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            max-width: 90%;
+            transform: translateX(-50%) translateY(20px);
         }
 
         .toast.show {
             opacity: 1;
             pointer-events: auto;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast.success {
+            background-color: var(--toast-success);
+        }
+
+        .toast.error {
+            background-color: var(--toast-error);
+        }
+
+        /* Toast Icon */
+        .toast-icon {
+            flex-shrink: 0;
+        }
+
+        .toast-message {
+            flex-grow: 1;
+            text-align: left;
+            word-break: break-word;
         }
 
         /* Responsive Design */
         @media (max-width: 768px) {
+            .canvases-wrapper {
+                grid-template-columns: 1fr;
+            }
+
             .editor-preview {
                 flex-direction: column;
             }
 
             .fullscreen-overlay #fs-preview {
                 height: 70%;
+            }
+
+            .fullscreen-overlay {
+                padding: 15px;
+            }
+
+            .action-buttons {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .canvas-container {
+                padding: 15px;
+            }
+
+            .editor-container textarea {
+                min-height: 150px;
+            }
+
+            #add-canvas-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 2em;
+                bottom: 20px;
+                right: 20px;
             }
         }
     </style>
@@ -341,24 +487,42 @@
     <div class="canvases-wrapper" id="canvases"></div>
 
     <!-- Add Canvas Button -->
-    <button id="add-canvas-btn" title="Add New Canvas" aria-label="Add New Canvas">＋</button>
+    <button id="add-canvas-btn" title="Add New Canvas" aria-label="Add New Canvas">+</button>
 
     <!-- Toast Notification -->
-    <div class="toast" id="toast">Action Successful</div>
+    <div class="toast" id="toast">
+        <span class="toast-icon"></span>
+        <span class="toast-message">Action Successful</span>
+    </div>
 
     <script>
         (function() {
+            // Constants
+            const MAX_CANVASES = 3;
+
+            // DOM Elements
             const canvasesContainer = document.getElementById('canvases');
             const addCanvasBtn = document.getElementById('add-canvas-btn');
             const toast = document.getElementById('toast');
-            const MAX_CANVASES = 3;
+
+            // State
             let canvasCount = 0;
 
             // Default SVG Code
-            const defaultSVG = `<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+            const defaultSVG = `<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
     <circle cx="100" cy="100" r="80" fill="#4CAF50" stroke="#333" stroke-width="4"/>
     <text x="100" y="115" font-size="30" text-anchor="middle" fill="#fff">SVG</text>
 </svg>`;
+
+            // SVG Icons for Buttons
+            const svgIcons = {
+                download: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>',
+                share: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91-1.31-2.92-2.92-2.92z"/></svg>',
+                fullscreen: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>',
+                upload: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>',
+                validate: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>',
+                close: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>'
+            };
 
             // Initialize with one canvas
             addCanvas();
@@ -376,6 +540,11 @@
                 canvasDiv.classList.add('canvas-container');
                 canvasDiv.setAttribute('id', canvasId);
 
+                // Canvas heading with remove button
+                const canvasHeading = document.createElement('div');
+                canvasHeading.classList.add('canvas-heading');
+                canvasHeading.innerHTML = `<h2>Canvas ${canvasCount}</h2>`;
+
                 // Remove Button (not for first canvas)
                 if (canvasCount > 1) {
                     const removeBtn = document.createElement('button');
@@ -389,10 +558,12 @@
                         if (canvasCount < MAX_CANVASES) {
                             addCanvasBtn.disabled = false;
                         }
-                        showToast('Canvas Removed');
+                        showToast('Canvas Removed', 'success');
                     });
-                    canvasDiv.appendChild(removeBtn);
+                    canvasHeading.appendChild(removeBtn);
                 }
+
+                canvasDiv.appendChild(canvasHeading);
 
                 // Editor and Preview Layout
                 const editorPreviewDiv = document.createElement('div');
@@ -405,18 +576,34 @@
                 const textarea = document.createElement('textarea');
                 textarea.placeholder = 'Enter your SVG code here...';
                 textarea.value = defaultSVG;
+                textarea.setAttribute('aria-label', 'SVG Code Editor');
                 editorContainer.appendChild(textarea);
+
+                // Error message container
+                const errorMsg = document.createElement('div');
+                errorMsg.classList.add('error-message');
+                errorMsg.setAttribute('id', `error-${canvasId}`);
+                editorContainer.appendChild(errorMsg);
 
                 // Action Buttons
                 const actionButtons = document.createElement('div');
                 actionButtons.classList.add('action-buttons');
+
+                // Validate Button
+                const validateBtn = document.createElement('button');
+                validateBtn.classList.add('validate-btn');
+                validateBtn.title = 'Validate SVG';
+                validateBtn.setAttribute('aria-label', 'Validate SVG');
+                validateBtn.setAttribute('data-tooltip', 'Validate SVG');
+                validateBtn.innerHTML = svgIcons.validate + '<span>Validate</span>';
+                actionButtons.appendChild(validateBtn);
 
                 // Download Button
                 const downloadBtn = document.createElement('button');
                 downloadBtn.title = 'Download SVG';
                 downloadBtn.setAttribute('aria-label', 'Download SVG');
                 downloadBtn.setAttribute('data-tooltip', 'Download SVG');
-                downloadBtn.innerHTML = '⬇️';
+                downloadBtn.innerHTML = svgIcons.download + '<span>Download</span>';
                 actionButtons.appendChild(downloadBtn);
 
                 // Share Button
@@ -424,7 +611,7 @@
                 shareBtn.title = 'Share Link';
                 shareBtn.setAttribute('aria-label', 'Share Link');
                 shareBtn.setAttribute('data-tooltip', 'Share Link');
-                shareBtn.innerHTML = '🔗';
+                shareBtn.innerHTML = svgIcons.share + '<span>Share</span>';
                 actionButtons.appendChild(shareBtn);
 
                 // Fullscreen Button
@@ -432,7 +619,7 @@
                 fullscreenBtn.title = 'Full Screen';
                 fullscreenBtn.setAttribute('aria-label', 'Full Screen');
                 fullscreenBtn.setAttribute('data-tooltip', 'Full Screen');
-                fullscreenBtn.innerHTML = '⛶';
+                fullscreenBtn.innerHTML = svgIcons.fullscreen + '<span>Fullscreen</span>';
                 actionButtons.appendChild(fullscreenBtn);
 
                 // Upload Button
@@ -440,7 +627,7 @@
                 uploadBtn.title = 'Upload SVG';
                 uploadBtn.setAttribute('aria-label', 'Upload SVG');
                 uploadBtn.setAttribute('data-tooltip', 'Upload SVG');
-                uploadBtn.innerHTML = '📤';
+                uploadBtn.innerHTML = svgIcons.upload + '<span>Upload</span>';
                 actionButtons.appendChild(uploadBtn);
 
                 // Hidden File Input for Upload
@@ -448,6 +635,7 @@
                 fileInput.type = 'file';
                 fileInput.accept = 'image/svg+xml';
                 fileInput.style.display = 'none';
+                fileInput.setAttribute('aria-hidden', 'true');
                 editorContainer.appendChild(fileInput);
 
                 editorContainer.appendChild(actionButtons);
@@ -458,7 +646,9 @@
 
                 const previewDiv = document.createElement('div');
                 previewDiv.setAttribute('id', `svg-preview-${canvasCount}`);
-                previewDiv.innerHTML = defaultSVG;
+
+                // Safely set initial SVG content
+                updatePreview(defaultSVG, previewDiv, previewContainer, errorMsg);
                 previewContainer.appendChild(previewDiv);
 
                 editorPreviewDiv.appendChild(editorContainer);
@@ -469,7 +659,11 @@
 
                 // Event Listeners
                 textarea.addEventListener('input', () => {
-                    updatePreview(textarea.value, previewDiv);
+                    updatePreview(textarea.value, previewDiv, previewContainer, errorMsg);
+                });
+
+                validateBtn.addEventListener('click', () => {
+                    validateSVG(textarea.value, errorMsg, previewContainer);
                 });
 
                 downloadBtn.addEventListener('click', () => {
@@ -492,18 +686,18 @@
                     const file = event.target.files[0];
                     if (file) {
                         if (file.type !== 'image/svg+xml') {
-                            showToast('Invalid file type. Please upload an SVG file.', true);
+                            showToast('Invalid file type. Please upload an SVG file.', 'error');
                             return;
                         }
                         const reader = new FileReader();
                         reader.onload = function(e) {
                             const content = e.target.result;
                             textarea.value = content;
-                            updatePreview(content, previewDiv);
-                            showToast('SVG Uploaded Successfully');
+                            updatePreview(content, previewDiv, previewContainer, errorMsg);
+                            showToast('SVG Uploaded Successfully', 'success');
                         };
                         reader.onerror = function() {
-                            showToast('Error reading the SVG file.', true);
+                            showToast('Error reading the SVG file.', 'error');
                         };
                         reader.readAsText(file);
                     }
@@ -516,41 +710,111 @@
                     addCanvasBtn.disabled = true;
                 }
 
-                showToast('Canvas Added');
+                showToast('Canvas Added', 'success');
             }
 
-            function updatePreview(svgContent, previewDiv) {
-                if (svgContent.trim()) {
-                    // Attempt to parse the SVG to ensure it's valid
-                    try {
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(svgContent, "image/svg+xml");
-                        const svg = doc.querySelector('svg');
-                        if (!svg) throw new Error('No SVG element found');
+            function updatePreview(svgContent, previewDiv, previewContainer, errorMsg) {
+                // Clear previous errors
+                errorMsg.textContent = '';
+                errorMsg.classList.remove('show');
+                previewContainer.classList.remove('error');
 
-                        // Ensure the SVG has a viewBox
-                        if (!svg.getAttribute('viewBox')) {
-                            const width = svg.getAttribute('width') || '100%';
-                            const height = svg.getAttribute('height') || '100%';
-                            // Extract numerical values for width and height if possible
-                            const widthNum = parseFloat(width) || 100;
-                            const heightNum = parseFloat(height) || 100;
-                            svg.setAttribute('viewBox', `0 0 ${widthNum} ${heightNum}`);
-                            svg.removeAttribute('width');
-                            svg.removeAttribute('height');
+                if (!svgContent.trim()) {
+                    previewDiv.innerHTML = '<p style="color: var(--remove-btn-color);">Please enter SVG code</p>';
+                    previewContainer.classList.add('error');
+                    errorMsg.textContent = 'SVG code cannot be empty';
+                    errorMsg.classList.add('show');
+                    return;
+                }
+
+                try {
+                    // Use DOMParser to create a document from SVG string
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(svgContent, "image/svg+xml");
+
+                    // Check for parsing errors
+                    const parserError = doc.querySelector('parsererror');
+                    if (parserError) {
+                        throw new Error(parserError.textContent);
+                    }
+
+                    const svg = doc.querySelector('svg');
+                    if (!svg) {
+                        throw new Error('No SVG element found');
+                    }
+
+                    // Ensure the SVG has a viewBox for better responsiveness
+                    if (!svg.hasAttribute('viewBox')) {
+                        const width = svg.getAttribute('width') || '100%';
+                        const height = svg.getAttribute('height') || '100%';
+
+                        // Handle different units and percentage values
+                        let widthValue = width;
+                        let heightValue = height;
+
+                        if (width.includes('%')) {
+                            widthValue = '100';
+                        } else {
+                            widthValue = parseFloat(width) || 100;
                         }
 
-                        // Serialize the SVG back to a string
-                        const serializer = new XMLSerializer();
-                        const updatedSVG = serializer.serializeToString(svg);
+                        if (height.includes('%')) {
+                            heightValue = '100';
+                        } else {
+                            heightValue = parseFloat(height) || 100;
+                        }
 
-                        previewDiv.innerHTML = updatedSVG;
-                    } catch (e) {
-                        console.error('Invalid SVG:', e);
-                        previewDiv.innerHTML = '<p style="color: red;">Invalid SVG Code</p>';
+                        svg.setAttribute('viewBox', `0 0 ${widthValue} ${heightValue}`);
                     }
-                } else {
-                    previewDiv.innerHTML = '<p style="color: red;">Invalid SVG Code</p>';
+
+                    // Create a safe container
+                    const safeContainer = document.createElement('div');
+                    safeContainer.appendChild(svg.cloneNode(true));
+
+                    // Update the preview
+                    previewDiv.innerHTML = safeContainer.innerHTML;
+                } catch (e) {
+                    console.error('SVG Error:', e);
+                    previewDiv.innerHTML = `<p style="color: var(--remove-btn-color);">Invalid SVG Code</p>`;
+                    previewContainer.classList.add('error');
+                    errorMsg.textContent = `Error: ${e.message}`;
+                    errorMsg.classList.add('show');
+                }
+            }
+
+            function validateSVG(svgContent, errorMsg, previewContainer) {
+                if (!svgContent.trim()) {
+                    showToast('SVG code cannot be empty.', 'error');
+                    return;
+                }
+
+                try {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(svgContent, "image/svg+xml");
+
+                    // Check for parsing errors
+                    const parserError = doc.querySelector('parsererror');
+                    if (parserError) {
+                        throw new Error(parserError.textContent);
+                    }
+
+                    const svg = doc.querySelector('svg');
+                    if (!svg) {
+                        throw new Error('No SVG element found');
+                    }
+
+                    // Clear previous errors
+                    errorMsg.textContent = '';
+                    errorMsg.classList.remove('show');
+                    previewContainer.classList.remove('error');
+
+                    showToast('SVG is valid!', 'success');
+                } catch (e) {
+                    console.error('Validation Error:', e);
+                    previewContainer.classList.add('error');
+                    errorMsg.textContent = `Error: ${e.message}`;
+                    errorMsg.classList.add('show');
+                    showToast('SVG validation failed', 'error');
                 }
             }
 
@@ -560,11 +824,30 @@
 
                 const fsPreview = document.createElement('div');
                 fsPreview.setAttribute('id', 'fs-preview');
-                fsPreview.innerHTML = svgContent;
+
+                // Safely set the SVG content
+                try {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(svgContent, "image/svg+xml");
+
+                    const parserError = doc.querySelector('parsererror');
+                    if (parserError) {
+                        throw new Error(parserError.textContent);
+                    }
+
+                    const svg = doc.querySelector('svg');
+                    if (!svg) {
+                        throw new Error('No SVG element found');
+                    }
+
+                    fsPreview.innerHTML = new XMLSerializer().serializeToString(svg);
+                } catch (e) {
+                    fsPreview.innerHTML = `<p style="color: var(--remove-btn-color);">Invalid SVG Code: ${e.message}</p>`;
+                }
 
                 const closeBtn = document.createElement('button');
                 closeBtn.classList.add('close-btn');
-                closeBtn.innerHTML = '✖️';
+                closeBtn.innerHTML = svgIcons.close + 'Close';
                 closeBtn.title = 'Close Full Screen';
                 closeBtn.setAttribute('aria-label', 'Close Full Screen');
 
@@ -582,39 +865,68 @@
 
             function downloadSVG(svgContent) {
                 if (!svgContent.trim()) {
-                    showToast('No SVG code to download', true);
+                    showToast('No SVG code to download', 'error');
                     return;
                 }
-                const blob = new Blob([svgContent], { type: 'image/svg+xml' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'image.svg';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                showToast('SVG Downloaded');
+
+                try {
+                    // Validate SVG before download
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(svgContent, "image/svg+xml");
+
+                    const parserError = doc.querySelector('parsererror');
+                    if (parserError) {
+                        throw new Error('Invalid SVG format');
+                    }
+
+                    const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `svg-export-${new Date().toISOString().slice(0, 10)}.svg`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    showToast('SVG Downloaded', 'success');
+                } catch (e) {
+                    showToast(`Download failed: ${e.message}`, 'error');
+                }
             }
 
             function shareLink(svgContent) {
                 if (!svgContent.trim()) {
-                    showToast('No SVG code to share', true);
+                    showToast('No SVG code to share', 'error');
                     return;
                 }
-                const encoded = encodeURIComponent(svgContent);
-                const shareURL = `${window.location.origin}${window.location.pathname}#${encoded}`;
-                // Copy to clipboard
-                if (navigator.clipboard && window.isSecureContext) {
-                    navigator.clipboard.writeText(shareURL).then(() => {
-                        showToast('Shareable link copied to clipboard!');
-                    }).catch(err => {
-                        console.error('Could not copy text: ', err);
+
+                try {
+                    // Validate SVG before sharing
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(svgContent, "image/svg+xml");
+
+                    const parserError = doc.querySelector('parsererror');
+                    if (parserError) {
+                        throw new Error('Invalid SVG format');
+                    }
+
+                    const encoded = encodeURIComponent(svgContent);
+                    const shareURL = `${window.location.origin}${window.location.pathname}#${encoded}`;
+
+                    // Copy to clipboard
+                    if (navigator.clipboard && window.isSecureContext) {
+                        navigator.clipboard.writeText(shareURL).then(() => {
+                            showToast('Shareable link copied to clipboard!', 'success');
+                        }).catch(err => {
+                            console.error('Could not copy text: ', err);
+                            fallbackCopyTextToClipboard(shareURL);
+                        });
+                    } else {
+                        // Fallback
                         fallbackCopyTextToClipboard(shareURL);
-                    });
-                } else {
-                    // Fallback
-                    fallbackCopyTextToClipboard(shareURL);
+                    }
+                } catch (e) {
+                    showToast(`Sharing failed: ${e.message}`, 'error');
                 }
             }
 
@@ -623,13 +935,14 @@
                 const textarea = document.createElement('textarea');
                 textarea.value = text;
                 textarea.style.position = 'fixed';  // Prevent scrolling to bottom
+                textarea.style.opacity = '0';
                 document.body.appendChild(textarea);
                 textarea.focus();
                 textarea.select();
                 try {
                     const successful = document.execCommand('copy');
                     if (successful) {
-                        showToast('Shareable link copied to clipboard!');
+                        showToast('Shareable link copied to clipboard!', 'success');
                     } else {
                         prompt('Copy the link below:', text);
                     }
@@ -640,11 +953,23 @@
                 document.body.removeChild(textarea);
             }
 
-            function showToast(message, isError = false) {
+            function showToast(message, type = 'success') {
                 const toast = document.getElementById('toast');
-                toast.textContent = message;
-                toast.style.backgroundColor = isError ? 'rgba(255, 107, 107, 0.9)' : 'rgba(0, 0, 0, 0.8)';
-                toast.classList.add('show');
+                const toastMessage = toast.querySelector('.toast-message');
+                const toastIcon = toast.querySelector('.toast-icon');
+
+                toastMessage.textContent = message;
+
+                // Set icon based on type
+                if (type === 'error') {
+                    toastIcon.innerHTML = '❌';
+                    toast.className = 'toast error show';
+                } else {
+                    toastIcon.innerHTML = '✅';
+                    toast.className = 'toast success show';
+                }
+
+                // Hide the toast after 3 seconds
                 setTimeout(() => {
                     toast.classList.remove('show');
                 }, 3000);
@@ -656,17 +981,30 @@
                 if (hash) {
                     try {
                         const decoded = decodeURIComponent(hash);
-                        // Apply to all textareas
-                        const textareas = document.querySelectorAll('.editor-container textarea');
-                        textareas.forEach((textarea, index) => {
+
+                        // Validate the decoded SVG
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(decoded, "image/svg+xml");
+
+                        const parserError = doc.querySelector('parsererror');
+                        if (parserError) {
+                            throw new Error('Invalid SVG in URL');
+                        }
+
+                        // Apply to the first canvas
+                        const textarea = document.querySelector('.editor-container textarea');
+                        const previewDiv = document.getElementById('svg-preview-1');
+                        const previewContainer = previewDiv.parentElement;
+                        const errorMsg = document.getElementById('error-canvas-1');
+
+                        if (textarea && previewDiv) {
                             textarea.value = decoded;
-                            const previewDiv = document.getElementById(`svg-preview-${index + 1}`);
-                            updatePreview(decoded, previewDiv);
-                        });
-                        showToast('SVG Loaded from URL');
+                            updatePreview(decoded, previewDiv, previewContainer, errorMsg);
+                            showToast('SVG Loaded from URL', 'success');
+                        }
                     } catch (e) {
-                        console.error('Invalid SVG code in URL hash.');
-                        showToast('Failed to Load SVG from URL', true);
+                        console.error('Error loading SVG from URL:', e);
+                        showToast('Failed to load SVG from URL: ' + e.message, 'error');
                     }
                 }
             }
